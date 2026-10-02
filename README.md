@@ -5,20 +5,14 @@ A tecnologia usada para fabricação é o [bootc](https://github.com/bootc-dev/b
 
 # Variantes disponíveis
 
-* `fedora-silverblue-bootc-custom-nvidia-open` que inclui a stack proprietária de NVIDIA para GPUs da série 16xx e acima (Turing+). [📦Containerfile](https://github.com/ramonmsilvabr/fedora-silverblue-bootc-custom/blob/main/builds/nvidia-open/Containerfile)
-* `fedora-silverblue-bootc-custom-nvidia-legacy-580xx` que inclui a stack proprietária da NVIDIA para GPUs da série 10xx, 9xx e 8xx (Maxwell, Pascal e Volta). [📦Containerfile](https://github.com/ramonmsilvabr/fedora-silverblue-bootc-custom/blob/main/builds/nvidia-legacy-580xx/Containerfile)
-* (DESCONTINUADO POR HORA)`fedora-silverblue-bootc-custom` apenas inclui os drivers Open Source. [📦Containerfile](https://github.com/ramonmsilvabr/fedora-silverblue-bootc-custom/blob/main/builds/default/Containerfile)
+* `fedora-silverblue-nvidia-open` que inclui a stack proprietária de NVIDIA para GPUs da série 16xx e acima (Turing+). [📦Containerfile](https://github.com/ramonmsilvabr/fedora-silverblue-bootc-custom/blob/main/builds/nvidia-open/Containerfile)
+* `fedora-silverblue-nvidia-legacy-580xx` que inclui a stack proprietária da NVIDIA para GPUs da série 10xx, 9xx e 8xx (Maxwell, Pascal e Volta). [📦Containerfile](https://github.com/ramonmsilvabr/fedora-silverblue-bootc-custom/blob/main/builds/nvidia-legacy-580xx/Containerfile)
 
 # Requisitos de hardware
 
 Para as variantes NVIDIA, é necessário que você tenha uma GPU da fabricante correspondente.
 * Pelo menos uma GPU Maxwell (GeForce GTX 8xx) para a edição Legacy.
 * Pelo menos uma GPU Turing (GeForce RTX 20xx) para a edição Open.
-
-Para as variantes Open Source, os requisitos são idênticos a uma edição oficial do
-* Processador dual core de 2 GHz ou mais rápido
-* Memória RAM do sistema de 2 GB
-* 15 GB de espaço em disco não alocado
 
 # Canais de atualização
 
@@ -27,7 +21,7 @@ As versões vão sendo alteradas na medida que o upstream do Fedora disponibiliz
 Para referência mais atual, as versões são disponibilizadas assim:
 |Canal|Versão atual|Recorrência de build|
 |---|---|---|
-|latest|44|Diária||
+|latest|44|Semanal||
 |beta|45|Ocasional|
 |old|43|Ocasional|
 
@@ -35,6 +29,8 @@ Para referência mais atual, as versões são disponibilizadas assim:
 
 Módulos de kernel extras:
 * `nvidia`, `nvidia-drm`, `nvidia-uvm`, `nvidia-modeset`: Drivers da NVIDIA
+
+Nenhuma outra modificação além do driver é inclusa.
 
 Ambiente Desktop: GNOME Shell 50.x
 
@@ -47,15 +43,15 @@ Imagem base: [Fedora Silverblue](https://quay.io/repository/fedora/fedora-silver
 * Escolha uma das edições dentro do builds/*, clone o repositório e crie um container podman com a imagem
 
 ```
-git clone https://github.com/ramonmsilvabr/fedora-silverblue-bootc-custom.git
-cd fedora-silverblue-bootc-custom
-sudo podman build --build-arg SECUREBOOT_IGNORE=true -t fedora-silverblue-bootc-custom-x . -f builds/<edição escolhida>/Containerfile
+git clone https://github.com/ramonmsilvabr/fedora-silverblue-nvidia.git
+cd fedora-silverblue-nvidia
+sudo podman build --build-arg SECUREBOOT=false -t fedora-silverblue-nvidia-x . -f builds/<edição escolhida>/Containerfile
 ```
 
 * Faça o `switch` para a imagem no host se você já estiver numa distro ostree: 
 
 ```
-   sudo bootc switch localhost/fedora-silverblue-bootc-custom-x
+   sudo bootc switch --transport containers-storage localhost/fedora-silverblue-nvidia-x
 ```
 
 * Se você não estiver numa distribuição OSTree, instale a partir da geração de ISO:
@@ -120,37 +116,17 @@ sudo podman run \
         quay.io/centos-bootc/bootc-image-builder:latest \
         --type anaconda-iso \
         --rootfs btrfs \
-        ghcr.io/ramonmsilvabr/fedora-silverblue-bootc-custom-nvidia-legacy-580xx:<versão>
-    ```
-    * Variante `Open Source`:
-    ```
-    sudo podman run \
-        --rm \
-        -it \
-        --privileged \
-        --pull=newer \
-        --security-opt label=type:unconfined_t \
-        -v ./output:/output \
-        -v ./config.toml:/config.toml:ro \
-        -v /var/lib/containers/storage:/var/lib/containers/storage \
-        quay.io/centos-bootc/bootc-image-builder:latest \
-        --type anaconda-iso \
-        --rootfs btrfs \
-        ghcr.io/ramonmsilvabr/fedora-silverblue-bootc-custom:<versão>
+        ghcr.io/ramonmsilvabr/fedora-silverblue-nvidia-legacy-580xx:<versão>
     ```
 
 * Se você já estiver em qualquer edição atômica do Fedora ou derivados, você pode puxar a imagem direto do registro.
 
     ```
-    sudo bootc switch ghcr.io/ramonmsilvabr/fedora-silverblue-bootc-custom-nvidia-open:<versão>
+    sudo bootc switch ghcr.io/ramonmsilvabr/fedora-silverblue-nvidia-open:<versão>
     ```
 
     ```
-    sudo bootc switch ghcr.io/ramonmsilvabr/fedora-silverblue-bootc-custom-nvidia-legacy-580xx:<versão>
-    ```
-    
-    ```
-    sudo bootc switch ghcr.io/ramonmsilvabr/fedora-silverblue-bootc-custom:<versão>
+    sudo bootc switch ghcr.io/ramonmsilvabr/fedora-silverblue-nvidia-legacy-580xx:<versão>
     ```
 
 
