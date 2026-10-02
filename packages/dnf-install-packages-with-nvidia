@@ -1,8 +1,3 @@
-distrobox
-btrfs-assistant
-podman-compose
-fastfetch
-rclone
 libva-nvidia-driver
 nvidia-container-toolkit
 nvidia-container-toolkit-base

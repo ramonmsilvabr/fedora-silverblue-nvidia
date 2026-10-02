@@ -8,13 +8,6 @@ dnf install -y fedora-workstation-repositories && \
 dnf config-manager setopt rpmfusion-nonfree-nvidia-driver.enabled=1 && \
 dnf install -y akmod-nvidia && \
 akmods --kernels "$KERNEL_VERSION" --force
-# Plugin GS
-WORKDIR /var/roothome
-RUN dnf -y install meson git cmake glib2 glib2-devel gnome-software-devel && \
-git clone https://github.com/ramonmsilvabr/gnome-software-plugin-bootc.git && \
-cd ./gnome-software-plugin-bootc && \
-meson setup builddir && \
-meson compile -C builddir
 
 FROM quay.io/fedora/fedora-silverblue:${FEDORA_VERSION} AS final
 # Adiciona labels do ostree
@@ -27,30 +20,19 @@ COPY packages/dnf* ./
 # Pacotes
 RUN dnf config-manager setopt rpmfusion-nonfree-nvidia-driver.enabled=1 && \
 dnf config-manager addrepo -y --from-repofile=https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo && \
-sed -i 's|^sslcacert=.*|sslcacert=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem|' /etc/yum.repos.d/nvidia-container-toolkit.repo && \
-tr '\n' ' ' < dnf-remove-packages | xargs dnf remove -y && \
-dnf upgrade -y --refresh && \
-tr '\n' ' ' < dnf-install-packages-with-nvidia | xargs dnf install -y
-# Instala plugin pra GS
-RUN mkdir -p ./gs-bootc
-COPY --from=builder /var/roothome/gnome-software-plugin-bootc/* ./gs-bootc
-COPY scripts/gnome-software-bootc/* ./
-RUN cd ./gs-bootc && \
-cp ./libgs_plugin_bootc.so /usr/lib64/gnome-software/plugins-23/ && \
-bash ../install-to-image.sh
+tr '\n' ' ' < dnf-install-packages-with-nvidia | xargs dnf install -y --nogpgcheck
 # Módulos
 COPY --from=builder /var/cache/akmods/nvidia/kmod-nvidia*.rpm ./
 COPY builds/nvidia-open/1-nvidia-args.toml ./
 RUN dnf -y install ./kmod-nvidia*.rpm xorg-x11-drv-nvidia-cuda --setopt=install_weak_deps=False && \
 mv -v 1-nvidia-args.toml /usr/lib/bootc/kargs.d/1-nvidia-args.toml
 # Assinatura Secure Boot
-ARG SECUREBOOT_IGNORE=false
+ARG SECUREBOOT=true
 COPY scripts/secureboot/ ./secureboot/
 RUN --mount=type=bind,source=.,target=/context \
-/bin/bash -c 'if [ "$SECUREBOOT_IGNORE" = "false" ]; then \
-        set -e; \
-        mkdir -p ./.anchor; \
-        cp -r /context/.anchor/* ./secureboot/; \
+/bin/bash -c 'if [ "$SECUREBOOT" = true ]; then \
+        mkdir -p ./.actions; \
+        cp -r /context/.actions/* ./secureboot/; \
         bash ./secureboot/sign-modules.sh; \
 fi'
 # Fase de limpeza

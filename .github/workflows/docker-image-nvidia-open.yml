@@ -2,7 +2,8 @@ name: nvidia-open build
 
 on:
   schedule:
-    - cron: '35 0 * * *' 
+    - cron: '35 0 * * 1'
+      timezone: 'America/Sao_Paulo' 
   workflow_dispatch:
     inputs:
       fedora_version:
@@ -11,7 +12,7 @@ on:
         required: false
 
 env:
-  IMAGE_NAME: fedora-silverblue-bootc-custom-nvidia-open
+  IMAGE_NAME: fedora-silverblue-nvidia-open
   REGISTRY: ghcr.io/${{ github.repository_owner }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -61,8 +62,8 @@ jobs:
         env:
           PRIVATEKEY_BASE64: ${{ secrets.SECURE_BOOT_KEY }}
         run: |
-            mkdir -p .anchor
-            echo -n "$PRIVATEKEY_BASE64" | base64 --decode > .anchor/MOK.priv
+            mkdir -p .actions
+            echo -n "$PRIVATEKEY_BASE64" | base64 --decode > .actions/MOK.priv
             
       - name: Build da imagem inicial (como root)
         run: |

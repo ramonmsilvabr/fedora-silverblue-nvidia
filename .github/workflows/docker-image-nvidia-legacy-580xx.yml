@@ -2,7 +2,8 @@ name: nvidia-legacy-580xx build
 
 on:
   schedule:
-    - cron: '15 0 * * *' 
+    - cron: '15 0 * * 1'
+      timezone: 'America/Sao_Paulo' 
   workflow_dispatch:
     inputs:
       fedora_version:
@@ -11,7 +12,7 @@ on:
         required: false
 
 env:
-  IMAGE_NAME: fedora-silverblue-bootc-custom-nvidia-legacy-580xx
+  IMAGE_NAME: fedora-silverblue-nvidia-legacy-580xx
   REGISTRY: ghcr.io/${{ github.repository_owner }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -56,12 +57,12 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login \
             -u "${{ github.actor }}" --password-stdin "${{ env.REGISTRY }}"
 
-      - name: Assinatura  dos módulos  de kernel
+      - name: Pega Key do Repo
         env:
           PRIVATEKEY_BASE64: ${{ secrets.SECURE_BOOT_KEY }}
         run: |
-            mkdir -p .anchor
-            echo -n "$PRIVATEKEY_BASE64" | base64 --decode > .anchor/MOK.priv
+            mkdir -p .actions
+            echo -n "$PRIVATEKEY_BASE64" | base64 --decode > .actions/MOK.priv
             
       - name: Build da imagem inicial (como root)
         run: |
