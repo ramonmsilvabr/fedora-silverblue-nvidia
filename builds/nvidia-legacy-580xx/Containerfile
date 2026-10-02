@@ -10,10 +10,7 @@ sh -c 'echo "%_without_kmod_nvidia_detect 1" > /etc/rpm/macros.nvidia-kmod' && \
 dnf install -y akmod-nvidia-580xx && \
 akmods --kernels "$KERNEL_VERSION" --force
 
-FROM quay.io/fedora/fedora-silverblue:${FEDORA_VERSION} AS final
-# Adiciona labels do ostree
-LABEL ostree.bootable="true"
-LABEL containers.bootc="1"
+FROM quay.io/fedora/fedora-silverblue:${FEDORA_VERSION} AS finals
 # Muda diretório de trabalho
 WORKDIR /tmp/build-context
 # Copia lista de pacotes
